@@ -16,8 +16,10 @@ import { User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 
-export default function Navbar({ userName }: { userName: string | null | undefined }) {
+export default function Navbar({ userName, id }: { userName: string | null | undefined, id: string | null | undefined }) {
   const pathname = usePathname();
+  console.log(userName)
+  console.log(id)
 
   return (
     <header className="bg-white shadow-sm">
@@ -57,8 +59,8 @@ export default function Navbar({ userName }: { userName: string | null | undefin
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-4">
-              <Link href={'/profile'}>
-                <DropdownMenuLabel className="font-light uppercase text-xs cursor-pointer">
+              <Link href={`/profile?id=${id}`}>
+                <DropdownMenuLabel className="font-light text-xs cursor-pointer">
                   {userName}
                 </DropdownMenuLabel>
               </Link>

@@ -4,8 +4,18 @@ import db from './db';
 type User = {
   email: string;
   name: string;
+  lastName?: string
+  username?: string;
   password?: string;
 };
+interface UserData {
+  id: number;
+  name: string;
+  lastName: string;
+  username: string;
+  email: string;
+}
+
 
 export async function findUserByCredentials(
   email: string,
@@ -24,7 +34,7 @@ export async function findUserByCredentials(
   const passwordMatch = compareSync(password, user.password);
 
   if (passwordMatch) {
-    return { email: user.email, name: user.name };
+    return { email: user.email, name: user.name, username: user.username, lastName: user.lastName };
   }
 
   return null;

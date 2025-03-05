@@ -33,6 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id.toString(),
           name: user.name,
           email: user.email,
+          userName: user.username
         };
       },
     }),
@@ -42,11 +43,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         session.user.id = token.sub;
       }
+      if (typeof token.userName === 'string') { // Verifica se token.userName é uma string
+        session.user.userName = token.userName;
+      }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        token.userName = user.userName;
       }
       return token;
     },

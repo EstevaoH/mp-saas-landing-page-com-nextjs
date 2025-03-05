@@ -3,6 +3,9 @@
 import db from '@/lib/db';
 import { hashSync } from 'bcryptjs';
 import { redirect } from 'next/navigation';
+import { toast } from 'sonner';
+import { formRegisterSchema } from './schema';
+import { signIn } from 'next-auth/react';
 
 export default async function registerAction(
   _prevState: any,
@@ -11,27 +14,28 @@ export default async function registerAction(
   const entries = Array.from(formData.entries());
   const data = Object.fromEntries(entries) as {
     name: string;
+    lastName: string;
+    username: string;
     email: string;
     password: string;
   };
 
-  // se não tiver email, nome ou senha, retorna erro
-  if (!data.email || !data.name || !data.password) {
+  const validation = formRegisterSchema.safeParse(data);
+  if (!validation.success) {
+    const errors = validation.error.errors.map((error) => ({
+      field: error.path.join('.'),
+      message: error.message,
+    }));
+
     return {
-      message: 'Preencha todos os campos',
       success: false,
-    };
-  }
-  // Validação do email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(data.email)) {
-    return {
-      message: 'Email inválido',
-      success: false,
+      message: "Erro de validação",
+      errors,
     };
   }
 
-  // se um usuário já existe.
+  const { email, name, password, lastName, username } = validation.data;
+
   const user = await db.user.findUnique({
     where: {
       email: data.email,
@@ -45,13 +49,29 @@ export default async function registerAction(
     };
   }
 
-  await db.user.create({
-    data: {
-      email: data.email,
-      name: data.name,
-      password: hashSync(data.password),
+  const existingUsername = await db.user.findUnique({
+    where: {
+      username: username,
     },
   });
 
-  return redirect('/dashboard');
+  if (existingUsername) {
+    return {
+      message: 'Este nome de usuário já está em uso.',
+      success: false,
+    };
+  }
+  const newUser = await db.user.create({
+    data: {
+      email: email,
+      name: name,
+      lastName: lastName,
+      username: username,
+      password: hashSync(password),
+    },
+  });
+  if (newUser) {
+    const redirectUrl = `/auto-login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+    return redirect(redirectUrl);
+  }
 }

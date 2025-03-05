@@ -1,15 +1,21 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSQL } from '@prisma/adapter-libsql';
 import { createClient } from '@libsql/client';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 declare global {
   var prisma: PrismaClient | undefined;
 }
 
+const url = process.env.TURSO_DATABASE_URL
+const authToken = process.env.TURSO_AUTH_TOKEN
+
 // Configuração do cliente LibSQL (Turso)
 const libsql = createClient({
-  url: process.env.TURSO_DATABASE_URL!, // URL do banco de dados Turso
-  authToken: process.env.TURSO_AUTH_TOKEN!, // Token de autenticação do Turso
+  url: "libsql://livrosaas-estevaoh.turso.io"!, // URL do banco de dados Turso
+  authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NDExMDUyNTMsImlkIjoiZjczYmU1NzctMWZjNC00MWEzLWE3ZWUtMTYwODA0YWQ0ZTZhIn0.OU3ozBBCimJbdlQ2I-EUpG7zRVKNn5IgjEecw1LmLHJucPEb3Fz93XF89m3tPir5d8Wxw1UE7qYmI4pc9s3NAA"!, // Token de autenticação do Turso
 });
 
 // Adaptador do Prisma para LibSQL
