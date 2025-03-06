@@ -3,9 +3,7 @@
 import db from '@/lib/db';
 import { hashSync } from 'bcryptjs';
 import { redirect } from 'next/navigation';
-import { toast } from 'sonner';
 import { formRegisterSchema } from './schema';
-import { signIn } from 'next-auth/react';
 
 export default async function registerAction(
   _prevState: any,
@@ -36,31 +34,29 @@ export default async function registerAction(
 
   const { email, name, password, lastName, username } = validation.data;
 
-  const user = await db.user.findUnique({
+  const existingUser = await db.user.findFirst({
     where: {
-      email: data.email,
+      OR: [
+        { email: email },
+        { username: username },
+      ],
     },
   });
 
-  if (user) {
-    return {
-      message: 'Este e-mail já foi cadastrado.',
-      success: false,
-    };
+  if (existingUser) {
+    if (existingUser.email === email) {
+      return {
+        success: false,
+        message: 'Este e-mail já foi cadastrado.',
+      };
+    } else if (existingUser.username === username) {
+      return {
+        success: false,
+        message: 'Este nome de usuário já está em uso.',
+      };
+    }
   }
 
-  const existingUsername = await db.user.findUnique({
-    where: {
-      username: username,
-    },
-  });
-
-  if (existingUsername) {
-    return {
-      message: 'Este nome de usuário já está em uso.',
-      success: false,
-    };
-  }
   const newUser = await db.user.create({
     data: {
       email: email,
@@ -68,6 +64,8 @@ export default async function registerAction(
       lastName: lastName,
       username: username,
       password: hashSync(password),
+      status: "active", // Status padrão
+      signature: "free", // Plano padrão
     },
   });
   if (newUser) {

@@ -9,7 +9,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <Logo />
             </Link>
             {children}
-            <Toaster />
         </section>
     )
 }

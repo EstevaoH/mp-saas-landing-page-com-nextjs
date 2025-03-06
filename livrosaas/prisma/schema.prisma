@@ -10,11 +10,14 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique // Adicionado campo username e marcado como único
+  username  String   @unique
   name      String
   lastName  String
   email     String   @unique
   password  String
+
+  status    String   @default("active") // Status da conta, padrão é "ativo"
+  signature     String   @default("free") // Plano do usuário, padrão é "gratuito"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

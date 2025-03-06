@@ -2,9 +2,10 @@ interface AlertMessageProps {
     success?: boolean;
     message?: string;
     errors?: { message: string }[];
+    close?: boolean | undefined
 }
 
-export function AlertMessage({ success, message, errors }: AlertMessageProps) {
+export function AlertMessage({ success, message, errors, close }: AlertMessageProps) {
     if (success === false) {
         return (
             <div

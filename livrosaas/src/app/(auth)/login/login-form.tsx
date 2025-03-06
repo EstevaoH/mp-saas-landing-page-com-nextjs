@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { FormLoginInputs, formLoginSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
@@ -79,7 +80,11 @@ export default function LoginForm() {
                     </Button>
                   </div>
                 </FormControl>
-                <FormMessage />
+                <p className="text-sm text-muted-foreground mt-3">
+                  <Link href={'/check-email'}>
+                    Esqueceu a senha?
+                  </Link>
+                </p>
               </FormItem>
             )}
           />

@@ -22,7 +22,7 @@ export default function Navbar({ userName, id }: { userName: string | null | und
   console.log(id)
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-gray-50 shadow-sm dark:bg-neutral-950 dark:border-b dark:shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="text-gray-700 hover:text-gray-900">
@@ -54,8 +54,8 @@ export default function Navbar({ userName, id }: { userName: string | null | und
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="text-gray-700 hover:text-gray-900">
-                <User size={24} />
+              <button className="text-gray-700 hover:text-gray-900 dark:hover:text-gray-50">
+                <User size={24}  />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-4">

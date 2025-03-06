@@ -11,3 +11,4 @@ export const formLoginSchema = z.object({
 });
 
 export type FormLoginInputs = z.infer<typeof formLoginSchema>;
+
