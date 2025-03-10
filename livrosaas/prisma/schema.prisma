@@ -7,18 +7,150 @@ datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
 }
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  name      String
-  lastName  String
-  email     String   @unique
-  password  String
+  id              Int           @id @default(autoincrement())
+  username        String        @unique
+  name            String
+  lastName        String
+  email           String        @unique
+  password        String
+  status          String        @default("active") // Status do usuário (ativo, inativo, etc.)
+  planId          Int           @default(1)
+  plan            Plan          @relation(fields: [planId], references: [id])
+  nextBillingDate DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  payments        Payment[]
+  planHistories   PlanHistory[]
+  addresses       Address[]
+  notifications   Notification[]
+  logs            Log[]
+  settings        UserSettings? // Relação 1:1 com UserSettings
+  reviews         Review[]
+}
 
-  status    String   @default("active") // Status da conta, padrão é "ativo"
-  signature     String   @default("free") // Plano do usuário, padrão é "gratuito"
+model Plan {
+  id               Int            @id @default(autoincrement())
+  name             String
+  description      String
+  smallDescription String
+  price            Float
+  billingCycle     String
+  status           String         @default("active") // Status do plano (ativo, inativo, etc.)
+  users            User[]
+  features         PlanFeature[]
+  contents         Content[]
+  payments         Payment[]      // Relação inversa com Payment
+  planHistories    PlanHistory[]  // Relação inversa com PlanHistory
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Payment {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation(fields: [userId], references: [id])
+  planId          Int
+  plan            Plan        @relation(fields: [planId], references: [id])
+  amount          Float
+  paymentMethod   String
+  status          String      @default("pending")
+  transactionId   String?
+  billingCycle    BillingCycle // Ciclo de cobrança (mensal, anual, etc.)
+  nextBillingDate DateTime    // Próxima data de cobrança
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model PlanHistory {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  planId          Int
+  plan            Plan     @relation(fields: [planId], references: [id])
+  startDate       DateTime @default(now())
+  endDate         DateTime?
+  status          String   @default("active") // Status do histórico do plano (ativo, expirado, etc.)
+  createdAt       DateTime @default(now())
+}
+
+model PlanFeature {
+  id              Int      @id @default(autoincrement())
+  planId          Int
+  plan            Plan     @relation(fields: [planId], references: [id])
+  feature         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Notification {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  message         String
+  type            String   @default("info") // Tipo de notificação (info, alerta, etc.)
+  status          String   @default("unread") // Status da notificação (não lida, lida, etc.)
+  createdAt       DateTime @default(now())
+}
+
+model Log {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  action          String
+  details         String?
+  createdAt       DateTime @default(now())
+}
+
+model Address {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  street          String
+  city            String
+  state           String
+  zipCode         String
+  country         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserSettings {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique // ID do usuário (relação 1:1 com a tabela User)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Exclui as configurações se o usuário for excluído
+  theme           String   @default("light") // Tema (ex: "light", "dark")
+  language        String   @default("pt-BR") // Idioma (ex: "pt-BR", "en-US")
+  notifications   Boolean  @default(true)    // Notificações habilitadas ou não
+  createdAt       DateTime @default(now())   // Data de criação
+  updatedAt       DateTime @updatedAt        // Data da última atualização
+}
+
+model Content {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String
+  type            String   @default("article") // Tipo de conteúdo (artigo, vídeo, etc.)
+  planId          Int?
+  plan            Plan?    @relation(fields: [planId], references: [id])
+  reviews         Review[] // Relação inversa com Review
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Review {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  contentId       Int?
+  content         Content? @relation(fields: [contentId], references: [id])
+  rating          Int      @default(5) // Avaliação (1 a 5)
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

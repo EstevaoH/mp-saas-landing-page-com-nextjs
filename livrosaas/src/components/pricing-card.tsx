@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from './ui/card';
 import { Button } from './ui/button';
+import Link from 'next/link';
 
 export default function PricingCard() {
   return (
@@ -45,7 +46,9 @@ export default function PricingCard() {
         </ul>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">Assine Agora</Button>
+        <Link className="w-full" href={"/checkout"}>
+          <Button className="w-full">Assine Agora</Button>
+        </Link>
       </CardFooter>
     </Card>
   );

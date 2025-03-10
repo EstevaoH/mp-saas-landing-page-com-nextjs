@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
+import { logUserLogin } from '@/app/actions/logsActions';
 
 export default function AutoLoginPage() {
   const searchParams = useSearchParams();

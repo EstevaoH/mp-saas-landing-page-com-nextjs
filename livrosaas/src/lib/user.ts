@@ -1,14 +1,18 @@
 import { compareSync } from 'bcryptjs';
 import db from './db';
+import { logUserLogin } from '@/app/actions/logsActions';
 
 type User = {
+  id: number;
   email: string;
   name: string;
-  lastName?: string
+  lastName?: string;
   username?: string;
-  password?: string;
   status?: string;
-  signature?: string;
+  planId?: number;
+  nextBillingDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export async function findUserByCredentials(
@@ -21,22 +25,16 @@ export async function findUserByCredentials(
     },
   });
 
-  if (!user) {
+  const fakeHash = "$2a$10$fakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehash";
+  const passwordMatch = compareSync(password, user?.password || fakeHash);
+
+  if (!user || !passwordMatch) {
     return null;
   }
 
-  const passwordMatch = compareSync(password, user.password);
-
-  if (passwordMatch) {
-    return {
-      email: user.email,
-      name: user.name,
-      username: user.username,
-      lastName: user.lastName,
-      status: user.status,
-      signature: user.signature
-    };
-  }
+  logUserLogin(user);
+  const { password: _, ...userWithoutPassword } = user;
+  return userWithoutPassword;
 
 
   return null;

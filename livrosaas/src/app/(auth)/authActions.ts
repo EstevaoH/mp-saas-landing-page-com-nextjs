@@ -30,7 +30,6 @@ export async function sendPasswordResetEmail(_prevState: any, formData: FormData
     }
 }
 export async function AccountValidation(email: string) {
-    console.log(email)
     try {
         const user = await db.user.findUnique({
             where: { email },

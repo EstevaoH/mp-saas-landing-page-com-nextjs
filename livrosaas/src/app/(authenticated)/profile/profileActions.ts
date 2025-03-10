@@ -1,9 +1,9 @@
 "use server"
 import db from "@/lib/db";
-import { use } from "react";
 import { changePasswordSchema, desactiveAccountSchema, formProfileSchema } from "./schema";
 import bcrypt from "bcryptjs";
-import { auth } from "../../../auth";
+import { auth } from "../../../../auth";
+import { logProfileUpdated } from "@/app/actions/logsActions";
 
 interface UserData {
   id: number;
@@ -81,6 +81,120 @@ export async function getUserData(userId: number): Promise<UserData | null> {
     throw new Error('Erro ao buscar dados do usuário.');
   }
 }
+
+export async function getUserSettings(userId: number) {
+  try {
+    const settings = await db.userSettings.findUnique({
+      where: { userId },
+    });
+    if (!settings) {
+      return {
+        success: false,
+        message: 'Configurações do usuário não encontradas.',
+      };
+    }
+
+    return {
+      success: true,
+      settings,
+    };
+  } catch (error) {
+    console.error('Erro ao buscar configurações:', error);
+    return {
+      success: false,
+      message: 'Erro ao buscar configurações.',
+    };
+  }
+}
+export async function updateUserSetting(userId: number, key: string, value: any) {
+  try {
+    const setting = await db.userSettings.upsert({
+      where: { userId },
+      select: {user: true},
+      update: { [key]: value },
+      create: { userId, [key]: value },
+    });
+    logProfileUpdated(setting.user)
+    return {
+      success: true,
+      setting,
+    };
+  } catch (error) {
+    console.error("Erro ao atualizar configuração:", error);
+    return {
+      success: false,
+      message: "Erro ao atualizar configuração.",
+    };
+  }
+}
+
+// export async function getNotificationStatus(email: string) {
+//   try {
+//     const user = await db.user.findUnique({
+//       where: { email },
+//       select: { notificationsEnabled: true },
+//     });
+
+//     if (!user) {
+//       return {
+//         success: false,
+//         message: 'Usuário não encontrado.',
+//       };
+//     }
+
+//     return {
+//       success: true,
+//       enabled: user.notificationsEnabled,
+//     };
+//   } catch (error) {
+//     console.error('Erro ao buscar status das notificações:', error);
+//     return {
+//       success: false,
+//       message: 'Erro ao buscar status das notificações.',
+//     };
+//   }
+// }
+
+// export async function toggleNotifications(email: string) {
+//   try {
+//     const user = await db.user.findUnique({
+//       where: { email },
+//       select: {
+//         id: true,
+//         email: true,
+//         notificationsEnabled: true,
+//       },
+//     });
+
+//     if (!user) {
+//       return {
+//         success: false,
+//         message: 'Usuário não encontrado.',
+//       };
+//     }
+
+//     const userUpdate = await db.user.update({
+//       where: { email },
+//       data: { notificationsEnabled: !user.notificationsEnabled },
+//     });
+
+//     // Registra a ação no log
+//     await logProfileUpdated(userUpdate);
+
+//     return {
+//       success: true,
+//       enabled: userUpdate.notificationsEnabled,
+//     };
+//   } catch (error) {
+//     console.error('Erro ao alternar notificações:', error);
+//     return {
+//       success: false,
+//       message: 'Erro ao alternar notificações.',
+//     };
+//   }
+// }
+
+
 export async function changePasswordActions(_prevState: any, formData: FormData) {
   const data = Object.fromEntries(formData.entries());
   const parsedData = changePasswordSchema.safeParse(data);

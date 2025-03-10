@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import db from '@/lib/db';
+import { logUserLogin } from '@/app/actions/logsActions';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -12,31 +13,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email e senha são obrigatórios.");
+          }
+
+          const user = await db.user.findUnique({
+            where: { email: credentials.email as string },
+          });
+
+          const fakeHash = "$2a$10$fakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehashfakehash";
+          const isValid = await compare(
+            credentials.password as string,
+            user?.password || fakeHash
+          );
+
+          if (!user || !isValid) {
+            return null;
+          }
+
+          logUserLogin(user); 
+          const { password, ...userWithoutPassword } = user;
+          return {
+            id: userWithoutPassword.id.toString(),
+            name: userWithoutPassword.name,
+            email: userWithoutPassword.email,
+            userName: userWithoutPassword.username,
+          };
+        } catch (error) {
+          console.error("Erro ao autenticar usuário:", error);
+          throw new Error("Erro ao autenticar usuário.");
         }
-
-        const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
-        });
-
-        if (!user) return null;
-
-
-
-        const isValid = await compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!isValid) return null;
-
-        return {
-          id: user.id.toString(),
-          name: user.name,
-          email: user.email,
-          userName: user.username
-        };
       },
     }),
   ],
@@ -45,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         session.user.id = token.sub;
       }
-      if (typeof token.userName === 'string') { // Verifica se token.userName é uma string
+      if (typeof token.userName === 'string') {
         session.user.userName = token.userName;
       }
       return session;

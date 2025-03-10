@@ -2,6 +2,7 @@
 import { signIn } from "next-auth/react";
 import { formLoginSchema } from "./schema";
 import { AccountValidation } from "../authActions";
+import { logUserLogin } from "@/app/actions/logsActions";
 
 
 export default async function loginAction(_prevState: any, formData: FormData) {

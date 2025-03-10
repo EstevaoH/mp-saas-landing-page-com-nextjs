@@ -4,6 +4,8 @@ import db from '@/lib/db';
 import { hashSync } from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { formRegisterSchema } from './schema';
+import { logUserCreated, logUserLogin } from '@/app/actions/logsActions';
+import { createFreeSubscription } from '@/app/actions/subscriptionActions';
 
 export default async function registerAction(
   _prevState: any,
@@ -56,6 +58,16 @@ export default async function registerAction(
       };
     }
   }
+  const freePlan = await db.plan.findFirst({
+    where: { name: "free" },
+  });
+  if (!freePlan) {
+    return {
+      success: false,
+      message: "Plano free não encontrado.",
+    };
+  }
+
 
   const newUser = await db.user.create({
     data: {
@@ -64,11 +76,23 @@ export default async function registerAction(
       lastName: lastName,
       username: username,
       password: hashSync(password),
-      status: "active", // Status padrão
-      signature: "free", // Plano padrão
+      status: "active",
+      planId: freePlan.id,
     },
   });
   if (newUser) {
+    logUserCreated(newUser);
+    logUserLogin(newUser);
+
+    const subscriptionResult = await createFreeSubscription(newUser.id);
+
+    if (!subscriptionResult.success) {
+      // console.error("Erro ao criar cobrança gratuita:", subscriptionResult.message);
+      return {
+        success: false,
+        message: "Erro ao criar cobrança gratuita.",
+      };
+    }
     const redirectUrl = `/auto-login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
     return redirect(redirectUrl);
   }

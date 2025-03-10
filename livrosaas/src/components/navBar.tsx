@@ -18,8 +18,6 @@ import { signOut } from 'next-auth/react';
 
 export default function Navbar({ userName, id }: { userName: string | null | undefined, id: string | null | undefined }) {
   const pathname = usePathname();
-  console.log(userName)
-  console.log(id)
 
   return (
     <header className="bg-gray-50 shadow-sm dark:bg-neutral-950 dark:border-b dark:shadow">
@@ -39,13 +37,13 @@ export default function Navbar({ userName, id }: { userName: string | null | und
             </Button>
           </Link>
           <Link
-            href="/dashboard/my-signature"
+            href={`/dashboard/my-signature?id=${id}`}
             className="text-gray-700 hover:text-gray-900"
           >
             <Button
               variant={'link'}
               className={cn(
-                pathname === '/dashboard/my-signature' ? 'underline' : ''
+                pathname === `/dashboard/my-signature?id=${id}` ? 'underline' : ''
               )}
             >
               Minha Assinatura

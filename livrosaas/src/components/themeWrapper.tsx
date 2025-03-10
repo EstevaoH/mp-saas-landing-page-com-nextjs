@@ -1,19 +1,21 @@
 'use client';
 
-import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+import { ThemeProvider, useTheme } from 'next-themes';
+import { usePathname } from 'next/navigation';
 
 export default function ThemeWrapper({ children }: { children: React.ReactNode }) {
-    const { theme } = useTheme();
+    const pathname = usePathname();
+    const isAuthPage = pathname === "/login" || pathname === "/register";
 
-    // return (
-    //     <div
-    //         className={cn(
-    //             'min-h-screen bg-background',
-    //             theme === 'dark' ? 'text-foreground' : ''
-    //         )}
-    //     >
-    //         {children}
-    //     </div>
-    // );
+    return (
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            forcedTheme={isAuthPage ? "light" : undefined}
+            disableTransitionOnChange
+        >
+            {children}
+        </ThemeProvider>
+    );
 }

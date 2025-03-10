@@ -1,13 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ConfirmDeactivationModal from "./desactivate-account-modal";
 
 export function DeleteAccount() {
-    const handleDeleteAccount = () => {
-        if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
-            console.log('Conta excluída');
-        }
-    };
+
     return (
         <Card className="border-red-200 bg-red-50">
             <CardHeader>
